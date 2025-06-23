@@ -13,7 +13,6 @@ from apps.core.infrastructure.models import (  # noqa
     LessonModel,
     QuestionModel,
     AnswerOptionModel,
-    AnswerModel,
 )
 from apps.users.infrastructure.models import UserModel  # noqa
 

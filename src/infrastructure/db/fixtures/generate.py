@@ -77,18 +77,9 @@ def generate_test_data() -> Dict:
                 {
                     'question_id': question_idx + 1,
                     'content': f'Вариант {i+1}: {fake.sentence(nb_words=5)}',
-                    'is_correct': i == correct_index,
+                    'is_right': i == correct_index,
                 }
             )
-
-    # 8. Ответы (1 правильный на вопрос)
-    for question_idx in range(len(data['questions'])):
-        correct_option = next(
-            opt for opt in data['answer_options'] if opt['question_id'] == question_idx + 1 and opt['is_correct']
-        )
-        data['answers'].append(
-            {'question_id': question_idx + 1, 'answer_option_id': data['answer_options'].index(correct_option) + 1}
-        )
 
     return data
 

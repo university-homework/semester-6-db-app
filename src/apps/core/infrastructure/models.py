@@ -55,8 +55,7 @@ class QuestionModel(BaseModel, table=True):
     content: str
 
     lesson: LessonModel = Relationship(back_populates='questions')
-    answer_options: list['AnswerOptionModel'] = Relationship(back_populates='question')
-    answer: 'AnswerModel' = Relationship(back_populates='question')
+    answer_options: list['AnswerOptionModel'] = Relationship(cascade_delete=True, back_populates='question')
 
 
 class AnswerOptionModel(BaseModel, table=True):
@@ -65,17 +64,6 @@ class AnswerOptionModel(BaseModel, table=True):
     id: int | None = Field(None, primary_key=True)
     question_id: int = Field(foreign_key='questions.id')
     content: str
+    is_right: bool
 
     question: QuestionModel = Relationship(back_populates='answer_options')
-    answer: 'AnswerModel' = Relationship(back_populates='answer_option')
-
-
-class AnswerModel(BaseModel, table=True):
-    __tablename__ = 'answers'
-
-    id: int | None = Field(None, primary_key=True)
-    question_id: int = Field(foreign_key='questions.id', unique=True)
-    answer_option_id: int = Field(foreign_key='answer_options.id')
-
-    answer_option: AnswerOptionModel = Relationship(back_populates='answer')
-    question: QuestionModel = Relationship(back_populates='answer')

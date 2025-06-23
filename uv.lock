@@ -98,6 +98,19 @@ wheels = [
 ]
 
 [[package]]
+name = "eralchemy2"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pygraphviz" },
+    { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6d/84/d43709501e867d00448ce98db3ea2e02d67b71813e1587f9aa94d338fc24/eralchemy2-1.4.1.tar.gz", hash = "sha256:1c1ee49b26287a459c5c89aa3eba3d6a9d1b8e6bd245d9fbacc6b15560fc66a5", size = 24101 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/b2/192f1f9b0eebd0169549e291bb9ca1b522636c48b530af655524e2a20896/eralchemy2-1.4.1-py3-none-any.whl", hash = "sha256:be3ecd4e696172fe4b439a3010b08564c6f7c7323b9e9b4369e47da7a7b48428", size = 18565 },
+]
+
+[[package]]
 name = "faker"
 version = "37.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -183,6 +196,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "environs" },
+    { name = "eralchemy2" },
     { name = "faker" },
     { name = "fastapi" },
     { name = "psycopg2" },
@@ -195,6 +209,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.15.2" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "environs", specifier = ">=14.1.1" },
+    { name = "eralchemy2", specifier = ">=1.4.1" },
     { name = "faker", specifier = ">=37.3.0" },
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "psycopg2", specifier = ">=2.9.10" },
@@ -328,6 +343,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/3d/847b6b1fed9f8ed3bb95a9ad04fbd0b212e832d4f0f50ff4d9ee5a9f15cf/pydantic_core-2.33.2-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:95237e53bb015f67b63c91af7518a62a8660376a6a0db19b89acc77a4d6199f5", size = 1981560 },
     { url = "https://files.pythonhosted.org/packages/6f/9a/e73262f6c6656262b5fdd723ad90f518f579b7bc8622e43a942eec53c938/pydantic_core-2.33.2-cp313-cp313t-win_amd64.whl", hash = "sha256:c2fc0a768ef76c15ab9238afa6da7f69895bb5d1ee83aeea2e3509af4472d0b9", size = 1935777 },
 ]
+
+[[package]]
+name = "pygraphviz"
+version = "1.14"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/66/ca/823d5c74a73d6b8b08e1f5aea12468ef334f0732c65cbb18df2a7f285c87/pygraphviz-1.14.tar.gz", hash = "sha256:c10df02377f4e39b00ae17c862f4ee7e5767317f1c6b2dfd04cea6acc7fc2bea", size = 106003 }
 
 [[package]]
 name = "python-dotenv"

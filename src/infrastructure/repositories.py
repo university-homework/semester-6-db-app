@@ -31,6 +31,7 @@ class BaseRepository(ABC):
             statement = statement.options(selectinload(*relations))
         if conditions:
             statement = statement.where(*conditions)
+        statement = statement.order_by(self.model.id)
 
         async with AsyncSession(engine) as session:
             result = await session.exec(statement)

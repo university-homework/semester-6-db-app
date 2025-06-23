@@ -1,10 +1,32 @@
 from infrastructure.db.models import BaseModel
 
 
-class CourseWithMemberCount(BaseModel):
+class MemberListSchema(BaseModel):
+    id: int
+    user_id: int
+    course_id: int
+    status: str
+
+
+class CourseWithMemberStats(BaseModel):
     id: int
     name: str
-    members_count: int
+    member_count: int
+    percentage: float
+
+
+class ModuleListSchema(BaseModel):
+    id: int
+    name: str
+    lesson_count: int
+    rank: int
+
+
+class LessonListSchema(BaseModel):
+    id: int
+    module_id: int
+    name: str
+    file_path: str
 
 
 class QuestionSchemaBase(BaseModel):

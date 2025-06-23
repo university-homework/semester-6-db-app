@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>index</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            text-align: left;
+            padding: 10px;
+        }
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e6f7ff;
+        }
+        .loading {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .actions {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-login {
+            background-color: #6c757d;
+        }
+        .btn-logout {
+            background-color: #343a40;
+        }
+        .auth-status {
+            margin-left: auto;
+            padding: 8px 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Платформа онлайн обучения</h1>
+
+    <div class="actions">
+        <button onclick="loadAllData()">Обновить данные</button>
+        <button id="loginBtn" class="btn-login" onclick="toggleAuth()">Авторизоваться</button>
+        <div id="authStatus" class="auth-status">Не авторизован</div>
+    </div>
+
+    <!-- Модальное окно для создания/редактирования -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Редактирование</h2>
+            <form id="editForm">
+                <div id="formFields"></div>
+                <div class="actions">
+                    <button type="button" class="btn-success" onclick="submitForm()">Сохранить</button>
+                    <button type="button" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <h2>Участники курсов</h2>
+    <div id="membersTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Курсы с количеством участников</h2>
+    <div id="coursesWithMembersTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Модули курсов</h2>
+    <div id="coursesModulesTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Уроки</h2>
+    <div id="lessonsTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Вопросы</h2>
+    <div id="questionsTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+    <button id="addQuestionBtn" class="btn-success" onclick="openCreateModal('/core/questions/')" style="display: none;">Добавить вопрос</button>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+        let currentEditingId = null;
+        let currentEndpoint = null;
+        let isAuthenticated = false;
+
+        // Функция для переключения состояния авторизации
+        function toggleAuth() {
+            isAuthenticated = !isAuthenticated;
+            updateAuthUI();
+            loadAllData();
+        }
+
+        // Обновление интерфейса в зависимости от состояния авторизации
+        function updateAuthUI() {
+            const loginBtn = document.getElementById('loginBtn');
+            const authStatus = document.getElementById('authStatus');
+            const addQuestionBtn = document.getElementById('addQuestionBtn');
+
+            if (isAuthenticated) {
+                loginBtn.textContent = 'Выйти';
+                loginBtn.className = 'btn-logout';
+                authStatus.textContent = 'Авторизован';
+                authStatus.style.backgroundColor = '#d4edda';
+                authStatus.style.color = '#155724';
+                authStatus.style.borderColor = '#c3e6cb';
+                addQuestionBtn.style.display = 'block';
+            } else {
+                loginBtn.textContent = 'Авторизоваться';
+                loginBtn.className = 'btn-login';
+                authStatus.textContent = 'Не авторизован';
+                authStatus.style.backgroundColor = '#f8f9fa';
+                authStatus.style.color = '#212529';
+                authStatus.style.borderColor = '#dee2e6';
+                addQuestionBtn.style.display = 'none';
+            }
+        }
+
+        // Функция для загрузки данных
+        async function fetchData(endpoint, method = 'GET', body = null) {
+            const config = {
+                method: method,
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+            };
+
+            if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+                config.body = JSON.stringify(body);
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Ошибка при получении данных:', error);
+                showError(error.message);
+                return null;
+            }
+        }
+
+        // Функция для отображения таблицы с учетом прав доступа
+        function renderTable(data, containerId, fields, endpoint) {
+            const container = document.getElementById(containerId);
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+
+            // Заголовки таблицы
+            fields.forEach(field => {
+                html += `<th>${field}</th>`;
+            });
+
+            if (isAuthenticated) {
+                html += '<th>Действия</th>';
+            }
+
+            html += '</tr></thead><tbody>';
+
+            // Данные таблицы
+            data.forEach(item => {
+                html += '<tr>';
+                fields.forEach(field => {
+                    html += `<td>${item[field] ?? '-'}</td>`;
+                });
+
+                if (isAuthenticated) {
+                    html += `<td class="action-buttons">
+                        <button class="btn-warning" onclick="openEditModal('${endpoint}', ${item.id})">✏️</button>
+                        <button class="btn-danger" onclick="deleteItem('${endpoint}', ${item.id})">🗑️</button>
+                    </td>`;
+                }
+
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Функция для открытия модального окна редактирования
+        async function openEditModal(endpoint, id) {
+            if (!isAuthenticated) {
+                showError('Для выполнения этого действия необходимо авторизоваться');
+                return;
+            }
+
+            currentEditingId = id;
+            currentEndpoint = endpoint;
+
+            const data = await fetchData(`${endpoint}${id}/`);
+            if (!data) return;
+
+            document.getElementById('modalTitle').textContent = 'Редактирование вопроса';
+            const formFields = document.getElementById('formFields');
+            formFields.innerHTML = '';
+
+            for (const [key, value] of Object.entries(data)) {
+                if (key === 'id') continue;
+
+                const div = document.createElement('div');
+                div.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.textContent = key;
+                label.htmlFor = key;
+
+                let input;
+                if (typeof value === 'string' && value.length > 50) {
+                    input = document.createElement('textarea');
+                    input.rows = 4;
+                } else {
+                    input = document.createElement('input');
+                    input.type = 'text';
+                }
+
+                input.id = key;
+                input.name = key;
+                input.value = value || '';
+
+                div.appendChild(label);
+                div.appendChild(input);
+                formFields.appendChild(div);
+            }
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Функция для открытия модального окна создания
+        function openCreateModal(endpoint) {
+            if (!isAuthenticated) {
+                showError('Для выполнения этого действия необходимо авторизоваться');
+                return;
+            }
+
+            currentEditingId = null;
+            currentEndpoint = endpoint;
+
+            document.getElementById('modalTitle').textContent = 'Создание нового вопроса';
+            const formFields = document.getElementById('formFields');
+            formFields.innerHTML = '';
+
+            const fields = [
+                { name: 'lesson_id', label: 'ID урока', type: 'number' },
+                { name: 'content', label: 'Содержание вопроса', type: 'textarea' }
+            ];
+
+            fields.forEach(field => {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+
+                const label = document.createElement('label');
+                label.textContent = field.label;
+                label.htmlFor = field.name;
+
+                const input = field.type === 'textarea'
+                    ? document.createElement('textarea')
+                    : document.createElement('input');
+
+                if (input.tagName === 'INPUT') {
+                    input.type = field.type || 'text';
+                } else {
+                    input.rows = 4;
+                }
+
+                input.id = field.name;
+                input.name = field.name;
+
+                div.appendChild(label);
+                div.appendChild(input);
+                formFields.appendChild(div);
+            });
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Функция для закрытия модального окна
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Функция для отправки формы
+        async function submitForm() {
+            const form = document.getElementById('editForm');
+            const formData = new FormData(form);
+            const data = {};
+
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            let result;
+            if (currentEditingId) {
+                result = await fetchData(
+                    `${currentEndpoint}${currentEditingId}/`,
+                    'PUT',
+                    data
+                );
+            } else {
+                result = await fetchData(
+                    currentEndpoint,
+                    'POST',
+                    data
+                );
+            }
+
+            if (result) {
+                closeModal();
+                loadAllData();
+                showSuccess(currentEditingId ? 'Данные успешно обновлены' : 'Запись успешно создана');
+            }
+        }
+
+        // Функция для удаления записи
+        async function deleteItem(endpoint, id) {
+            if (!isAuthenticated) {
+                showError('Для выполнения этого действия необходимо авторизоваться');
+                return;
+            }
+
+            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+                const result = await fetchData(
+                    `${endpoint}${id}/`,
+                    'DELETE'
+                );
+
+                loadAllData();
+                showSuccess('Запись успешно удалена');
+            }
+        }
+
+        // Функция для загрузки всех данных
+        async function loadAllData() {
+            try {
+                const members = await fetchData('/core/members/');
+                if (members) {
+                    renderTable(members, 'membersTable', ['id', 'user_id', 'course_id', 'status'], '/core/members/');
+                }
+
+                const coursesWithMembers = await fetchData('/core/courses/with-members-stats/');
+                if (coursesWithMembers) {
+                    renderTable(coursesWithMembers, 'coursesWithMembersTable', ['id', 'name', 'member_count', 'percentage'], '/core/courses/with-members-stats/');
+                }
+
+                const modulesWithLessons = await fetchData('/core/modules/lesson-counts/');
+                if (modulesWithLessons) {
+                    renderTable(modulesWithLessons, 'coursesModulesTable', ['id', 'name', 'lesson_count', 'rank'], '/core/modules/');
+                }
+
+                const lessons = await fetchData('/core/lessons/');
+                if (lessons) {
+                    renderTable(lessons, 'lessonsTable', ['id', 'module_id', 'name', 'file_path'], '/core/lessons/');
+                }
+
+                const questions = await fetchData('/core/questions/');
+                if (questions) {
+                    renderTable(questions, 'questionsTable', ['id', 'lesson_id', 'content'], '/core/questions/');
+                }
+            } catch (error) {
+                console.error('Ошибка при загрузке данных:', error);
+                showError('Ошибка при загрузке данных. Проверьте консоль для подробностей.');
+            }
+        }
+
+        // Вспомогательные функции для уведомлений
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.body.prepend(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.background = '#28a745';
+            successDiv.style.color = 'white';
+            successDiv.style.padding = '10px';
+            successDiv.style.margin = '10px 0';
+            successDiv.style.borderRadius = '4px';
+            successDiv.textContent = message;
+            document.body.prepend(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadAllData();
+
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target === modal) {
+                    closeModal();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

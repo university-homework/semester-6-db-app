@@ -1,17 +1,39 @@
 from apps.core.infrastructure import repositories
 
 
+class MemberService:
+    @staticmethod
+    async def get_all():
+        return await repositories.MemberRepository().get()
+
+
 class CourseService:
     @staticmethod
-    async def get_courses_with_member_count():
-        return await repositories.CourseRepository().get_courses_with_member_count()
+    async def get_courses_with_member_stats():
+        return await repositories.CourseRepository().get_courses_with_member_stats()
+
+
+class ModuleService:
+    @staticmethod
+    async def get_all():
+        return await repositories.ModuleRepository().get()
 
     @staticmethod
-    async def get_course_structure_analysis():
-        return await repositories.CourseRepository().get_course_structure_analysis()
+    async def get_with_lesson_counts():
+        return await repositories.ModuleRepository().get_with_lesson_counts()
+
+
+class LessonService:
+    @staticmethod
+    async def get_all():
+        return await repositories.LessonRepository().get()
 
 
 class QuestionService:
+    @staticmethod
+    async def get_all():
+        return await repositories.QuestionRepository().get()
+
     @staticmethod
     async def get(question_id: int):
         conditions = {

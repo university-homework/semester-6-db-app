@@ -19,13 +19,12 @@ async def load_from_json(filename: str):
 
         for table, model in [
             (users_models.UserModel.__tablename__, users_models.UserModel),
-            (core_models.MemberModel.__tablename__, core_models.MemberModel),
             (core_models.CourseModel.__tablename__, core_models.CourseModel),
+            (core_models.MemberModel.__tablename__, core_models.MemberModel),
             (core_models.ModuleModel.__tablename__, core_models.ModuleModel),
             (core_models.LessonModel.__tablename__, core_models.LessonModel),
             (core_models.QuestionModel.__tablename__, core_models.QuestionModel),
             (core_models.AnswerOptionModel.__tablename__, core_models.AnswerOptionModel),
-            (core_models.AnswerModel.__tablename__, core_models.AnswerModel),
         ]:
             for item in data.get(table, []):
                 session.add(model(**item))
