@@ -27,8 +27,8 @@ class BaseRepository(ABC):
         relations = [getattr(self.model, relation) for relation in relations]
 
         statement = select(self.model)
-        if relations:
-            statement = statement.options(selectinload(*relations))
+        for relation in relations:
+            statement = statement.options(selectinload(relation))
         if conditions:
             statement = statement.where(*conditions)
         statement = statement.order_by(self.model.id)

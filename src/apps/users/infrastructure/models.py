@@ -1,4 +1,4 @@
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 
 from infrastructure.db.models import BaseModel
 
@@ -12,3 +12,5 @@ class UserModel(BaseModel, table=True):
     last_name: str
     first_name: str
     patronymic: str | None = Field(None)
+
+    members: list['MemberModel'] = Relationship(back_populates='user')

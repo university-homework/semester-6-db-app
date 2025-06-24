@@ -11,6 +11,7 @@ class MemberModel(BaseModel, table=True):
     course_id: int = Field(foreign_key='courses.id')
     status: str
 
+    user: 'UserModel' = Relationship(back_populates='members')
     course: 'CourseModel' = Relationship(back_populates='members')
 
 

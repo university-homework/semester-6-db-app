@@ -1,10 +1,15 @@
 from infrastructure.db.models import BaseModel
+from apps.users.infrastructure.schemas import UserReadSchema
+
+
+class CourseForMemberResponseSchema(BaseModel):
+    name: str
 
 
 class MemberListSchema(BaseModel):
     id: int
-    user_id: int
-    course_id: int
+    user: UserReadSchema
+    course: CourseForMemberResponseSchema
     status: str
 
 
@@ -22,9 +27,13 @@ class ModuleListSchema(BaseModel):
     rank: int
 
 
+class ModuleResponseForLessonSchema(BaseModel):
+    name: str
+
+
 class LessonListSchema(BaseModel):
     id: int
-    module_id: int
+    module: ModuleResponseForLessonSchema
     name: str
     file_path: str
 
@@ -32,6 +41,16 @@ class LessonListSchema(BaseModel):
 class QuestionSchemaBase(BaseModel):
     id: int
     lesson_id: int
+    content: str
+
+
+class ListResponseForQuestionSchema(BaseModel):
+    name: str
+
+
+class QuestionListSchema(BaseModel):
+    id: int
+    lesson: ListResponseForQuestionSchema
     content: str
 
 

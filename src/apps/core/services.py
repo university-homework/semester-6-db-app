@@ -4,7 +4,7 @@ from apps.core.infrastructure import repositories
 class MemberService:
     @staticmethod
     async def get_all():
-        return await repositories.MemberRepository().get()
+        return await repositories.MemberRepository().get(relations=('user', 'course'))
 
 
 class CourseService:
@@ -26,13 +26,13 @@ class ModuleService:
 class LessonService:
     @staticmethod
     async def get_all():
-        return await repositories.LessonRepository().get()
+        return await repositories.LessonRepository().get(relations=('module',))
 
 
 class QuestionService:
     @staticmethod
     async def get_all():
-        return await repositories.QuestionRepository().get()
+        return await repositories.QuestionRepository().get(relations=('lesson',))
 
     @staticmethod
     async def get(question_id: int):

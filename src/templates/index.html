@@ -192,10 +192,11 @@
     <div id="questionsTable">
         <p class="loading">Данные загружаются...</p>
     </div>
-    <button id="addQuestionBtn" class="btn-success" onclick="openCreateModal('/core/questions/')" style="display: none;">Добавить вопрос</button>
+    <button id="addQuestionBtn" class="btn-success" onclick="openCreateQuestionModal('/core/questions/')" style="display: none;">Добавить вопрос</button>
 
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
+
         let currentEditingId = null;
         let currentEndpoint = null;
         let isAuthenticated = false;
@@ -261,7 +262,7 @@
         }
 
         // Функция для отображения таблицы с учетом прав доступа
-        function renderTable(data, containerId, fields, endpoint) {
+        function renderTable(data, containerId, fields, tableHeaders) {
             const container = document.getElementById(containerId);
 
             if (!data || data.length === 0) {
@@ -272,13 +273,9 @@
             let html = '<table><thead><tr>';
 
             // Заголовки таблицы
-            fields.forEach(field => {
+            tableHeaders.forEach(field => {
                 html += `<th>${field}</th>`;
             });
-
-            if (isAuthenticated) {
-                html += '<th>Действия</th>';
-            }
 
             html += '</tr></thead><tbody>';
 
@@ -289,9 +286,132 @@
                     html += `<td>${item[field] ?? '-'}</td>`;
                 });
 
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderMembersTable(data) {
+            const container = document.getElementById('membersTable');
+            const fields = ['id', 'user', 'course', 'status'];
+            const tableHeaders = ['id', 'пользователь', 'курс', 'статус'];
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+
+            // Заголовки таблицы
+            tableHeaders.forEach(item => {
+                html += `<th>${item}</th>`;    
+            });
+
+            html += '</tr></thead><tbody>';
+            console.log(data)
+
+            // Данные таблицы
+            data.forEach(item => {
+                html += '<tr>';
+                fields.forEach(field => {
+                    if (field === 'user') {
+                        html += `<td>${item[field]['username'] ?? '-'}</td>`;
+                    }
+                    else if (field === 'course') {
+                        html += `<td>${item[field]['name'] ?? '-'}</td>`;
+                    }
+                    else {
+                        html += `<td>${item[field] ?? '-'}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderLessonsTable(data) {
+            const container = document.getElementById('lessonsTable');
+            const fields = ['id', 'module', 'name', 'file_path'];
+            const tableHeaders = ['id', 'модуль', 'название', 'путь до файла'];
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+
+            // Заголовки таблицы
+            tableHeaders.forEach(item => {
+                html += `<th>${item}</th>`;    
+            });
+
+            html += '</tr></thead><tbody>';
+            console.log(data)
+
+            // Данные таблицы
+            data.forEach(item => {
+                html += '<tr>';
+                fields.forEach(field => {
+                    if (field === 'module') {
+                        html += `<td>${item[field]['name'] ?? '-'}</td>`;
+                    }
+                    else {
+                        html += `<td>${item[field] ?? '-'}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderQuestionsTable(data) {
+            const container = document.getElementById('questionsTable');
+            const fields = ['id', 'lesson', 'content'];
+            const tableHeaders = ['id', 'урок', 'вопрос'];
+            const endpoint = '/core/questions/'
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+
+            // Заголовки таблицы
+            tableHeaders.forEach(item => {
+                html += `<th>${item}</th>`;    
+            });
+
+            if (isAuthenticated) {
+                html += '<th>Действия</th>';
+            }
+
+            html += '</tr></thead><tbody>';
+            console.log(data)
+
+            // Данные таблицы
+            data.forEach(item => {
+                html += '<tr>';
+                fields.forEach(field => {
+                    if (field === 'lesson') {
+                        html += `<td>${item[field]['name'] ?? '-'}</td>`;
+                    }
+                    else {
+                        html += `<td>${item[field] ?? '-'}</td>`;
+                    }
+                });
+
                 if (isAuthenticated) {
                     html += `<td class="action-buttons">
-                        <button class="btn-warning" onclick="openEditModal('${endpoint}', ${item.id})">✏️</button>
+                        <button class="btn-warning" onclick="openQuestionEditModal('${endpoint}', ${item.id})">✏️</button>
                         <button class="btn-danger" onclick="deleteItem('${endpoint}', ${item.id})">🗑️</button>
                     </td>`;
                 }
@@ -303,56 +423,8 @@
             container.innerHTML = html;
         }
 
-        // Функция для открытия модального окна редактирования
-        async function openEditModal(endpoint, id) {
-            if (!isAuthenticated) {
-                showError('Для выполнения этого действия необходимо авторизоваться');
-                return;
-            }
-
-            currentEditingId = id;
-            currentEndpoint = endpoint;
-
-            const data = await fetchData(`${endpoint}${id}/`);
-            if (!data) return;
-
-            document.getElementById('modalTitle').textContent = 'Редактирование вопроса';
-            const formFields = document.getElementById('formFields');
-            formFields.innerHTML = '';
-
-            for (const [key, value] of Object.entries(data)) {
-                if (key === 'id') continue;
-
-                const div = document.createElement('div');
-                div.className = 'form-group';
-
-                const label = document.createElement('label');
-                label.textContent = key;
-                label.htmlFor = key;
-
-                let input;
-                if (typeof value === 'string' && value.length > 50) {
-                    input = document.createElement('textarea');
-                    input.rows = 4;
-                } else {
-                    input = document.createElement('input');
-                    input.type = 'text';
-                }
-
-                input.id = key;
-                input.name = key;
-                input.value = value || '';
-
-                div.appendChild(label);
-                div.appendChild(input);
-                formFields.appendChild(div);
-            }
-
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        // Функция для открытия модального окна создания
-        function openCreateModal(endpoint) {
+        // Функция для открытия модального окна создания вопроса
+        async function openCreateQuestionModal(endpoint) {
             if (!isAuthenticated) {
                 showError('Для выполнения этого действия необходимо авторизоваться');
                 return;
@@ -361,40 +433,117 @@
             currentEditingId = null;
             currentEndpoint = endpoint;
 
+            // Загружаем список уроков
+            const lessons = await fetchData('/core/lessons/');
+            if (!lessons) return;
+
             document.getElementById('modalTitle').textContent = 'Создание нового вопроса';
             const formFields = document.getElementById('formFields');
             formFields.innerHTML = '';
 
-            const fields = [
-                { name: 'lesson_id', label: 'ID урока', type: 'number' },
-                { name: 'content', label: 'Содержание вопроса', type: 'textarea' }
-            ];
+            // Поле для выбора урока
+            const lessonDiv = document.createElement('div');
+            lessonDiv.className = 'form-group';
 
-            fields.forEach(field => {
-                const div = document.createElement('div');
-                div.className = 'form-group';
+            const lessonLabel = document.createElement('label');
+            lessonLabel.textContent = 'Урок';
+            lessonLabel.htmlFor = 'lesson_id';
 
-                const label = document.createElement('label');
-                label.textContent = field.label;
-                label.htmlFor = field.name;
+            const lessonSelect = document.createElement('select');
+            lessonSelect.id = 'lesson_id';
+            lessonSelect.name = 'lesson_id';
 
-                const input = field.type === 'textarea'
-                    ? document.createElement('textarea')
-                    : document.createElement('input');
-
-                if (input.tagName === 'INPUT') {
-                    input.type = field.type || 'text';
-                } else {
-                    input.rows = 4;
-                }
-
-                input.id = field.name;
-                input.name = field.name;
-
-                div.appendChild(label);
-                div.appendChild(input);
-                formFields.appendChild(div);
+            // Добавляем опции в выпадающий список
+            lessons.forEach(lesson => {
+                const option = document.createElement('option');
+                option.value = lesson.id;
+                option.textContent = `${lesson.name} (ID: ${lesson.id})`;
+                lessonSelect.appendChild(option);
             });
+
+            lessonDiv.appendChild(lessonLabel);
+            lessonDiv.appendChild(lessonSelect);
+            formFields.appendChild(lessonDiv);
+
+            // Поле для содержания вопроса
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'form-group';
+
+            const contentLabel = document.createElement('label');
+            contentLabel.textContent = 'Содержание вопроса';
+            contentLabel.htmlFor = 'content';
+
+            const contentInput = document.createElement('textarea');
+            contentInput.id = 'content';
+            contentInput.name = 'content';
+            contentInput.rows = 4;
+
+            contentDiv.appendChild(contentLabel);
+            contentDiv.appendChild(contentInput);
+            formFields.appendChild(contentDiv);
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Функция для открытия модального окна редактирования вопроса
+        async function openQuestionEditModal(endpoint, id) {
+            currentEditingId = id;
+            currentEndpoint = endpoint;
+
+            // Загружаем данные вопроса и список уроков
+            const [question, lessons] = await Promise.all([
+                fetchData(`${endpoint}${id}/`),
+                fetchData('/core/lessons/')
+            ]);
+            
+            if (!question || !lessons) return;
+
+            document.getElementById('modalTitle').textContent = 'Редактирование вопроса';
+            const formFields = document.getElementById('formFields');
+            formFields.innerHTML = '';
+
+            // Поле для выбора урока
+            const lessonDiv = document.createElement('div');
+            lessonDiv.className = 'form-group';
+
+            const lessonLabel = document.createElement('label');
+            lessonLabel.textContent = 'Урок';
+            lessonLabel.htmlFor = 'lesson_id';
+
+            const lessonSelect = document.createElement('select');
+            lessonSelect.id = 'lesson_id';
+            lessonSelect.name = 'lesson_id';
+
+            // Добавляем опции в выпадающий список
+            lessons.forEach(lesson => {
+                const option = document.createElement('option');
+                option.value = lesson.id;
+                option.textContent = `${lesson.name} (ID: ${lesson.id})`;
+                option.selected = (lesson.id === question.lesson_id);
+                lessonSelect.appendChild(option);
+            });
+
+            lessonDiv.appendChild(lessonLabel);
+            lessonDiv.appendChild(lessonSelect);
+            formFields.appendChild(lessonDiv);
+
+            // Поле для содержания вопроса
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'form-group';
+
+            const contentLabel = document.createElement('label');
+            contentLabel.textContent = 'Содержание вопроса';
+            contentLabel.htmlFor = 'content';
+
+            const contentInput = document.createElement('textarea');
+            contentInput.id = 'content';
+            contentInput.name = 'content';
+            contentInput.rows = 4;
+            contentInput.value = question.content || '';
+
+            contentDiv.appendChild(contentLabel);
+            contentDiv.appendChild(contentInput);
+            formFields.appendChild(contentDiv);
 
             document.getElementById('editModal').style.display = 'block';
         }
@@ -459,27 +608,37 @@
             try {
                 const members = await fetchData('/core/members/');
                 if (members) {
-                    renderTable(members, 'membersTable', ['id', 'user_id', 'course_id', 'status'], '/core/members/');
+                    renderMembersTable(members);
                 }
 
                 const coursesWithMembers = await fetchData('/core/courses/with-members-stats/');
                 if (coursesWithMembers) {
-                    renderTable(coursesWithMembers, 'coursesWithMembersTable', ['id', 'name', 'member_count', 'percentage'], '/core/courses/with-members-stats/');
+                    renderTable(
+                        coursesWithMembers,
+                        'coursesWithMembersTable',
+                        ['id', 'name', 'member_count', 'percentage'],
+                        ['id', 'название', 'количество участников', 'процент']
+                    );
                 }
 
                 const modulesWithLessons = await fetchData('/core/modules/lesson-counts/');
                 if (modulesWithLessons) {
-                    renderTable(modulesWithLessons, 'coursesModulesTable', ['id', 'name', 'lesson_count', 'rank'], '/core/modules/');
+                    renderTable(
+                        modulesWithLessons,
+                        'coursesModulesTable',
+                        ['id', 'name', 'lesson_count', 'rank'],
+                        ['id', 'название', 'количество уроков', 'ранжирование'],
+                    );
                 }
 
                 const lessons = await fetchData('/core/lessons/');
                 if (lessons) {
-                    renderTable(lessons, 'lessonsTable', ['id', 'module_id', 'name', 'file_path'], '/core/lessons/');
+                    renderLessonsTable(lessons);
                 }
 
                 const questions = await fetchData('/core/questions/');
                 if (questions) {
-                    renderTable(questions, 'questionsTable', ['id', 'lesson_id', 'content'], '/core/questions/');
+                    renderQuestionsTable(questions);
                 }
             } catch (error) {
                 console.error('Ошибка при загрузке данных:', error);

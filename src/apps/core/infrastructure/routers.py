@@ -26,7 +26,7 @@ async def get_all_lessons():
     return await services.LessonService.get_all()
 
 
-@router.get("/questions/", response_model=list[schemas.QuestionSchemaBase], tags=['9', '11'])
+@router.get("/questions/", response_model=list[schemas.QuestionListSchema], tags=['9', '11'])
 async def get_all_questions():
     return await services.QuestionService.get_all()
 
