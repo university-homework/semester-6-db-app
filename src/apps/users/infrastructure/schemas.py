@@ -1,6 +1,5 @@
-from sqlmodel import Field
-
 from infrastructure.db.models import BaseModel
+from sqlmodel import Field
 
 
 class UserBaseSchema(BaseModel):

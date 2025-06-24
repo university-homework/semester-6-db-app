@@ -12,6 +12,7 @@ dependencies = [
     "faker>=37.3.0",
     "fastapi>=0.115.12",
     "psycopg2>=2.9.10",
+    "pytz>=2025.2",
     "sqlmodel>=0.0.24",
     "uvicorn>=0.34.2",
 ]

@@ -1,6 +1,5 @@
-from sqlmodel import Field, Relationship
-
 from infrastructure.db.models import BaseModel
+from sqlmodel import Field, Relationship
 
 
 class UserModel(BaseModel, table=True):

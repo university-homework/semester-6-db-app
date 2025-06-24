@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Type
 
+from infrastructure.db.config import engine
 from sqlalchemy.engine.result import ScalarResult
 from sqlalchemy.orm import selectinload
 from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
-
-from infrastructure.db.config import engine
 
 
 class BaseRepository(ABC):

@@ -143,6 +143,9 @@
             display: flex;
             gap: 5px;
         }
+        #mostPopularCourse {
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -168,6 +171,27 @@
             </form>
         </div>
     </div>
+
+    <h2>Статистика системы</h2>
+    <div id="systemStatsTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Самый популярный курс</h2>
+    <div id="mostPopularCourseTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Курс с наибольшим количеством уроков</h2>
+    <div id="courseWithReachestContentTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
+    <h2>Курсы без модулей (требуют доработки)</h2>
+    <div id="coursesWithoutModulesTable">
+        <p class="loading">Данные загружаются...</p>
+    </div>
+
     <h2>Участники курсов</h2>
     <div id="membersTable">
         <p class="loading">Данные загружаются...</p>
@@ -192,7 +216,7 @@
     <div id="questionsTable">
         <p class="loading">Данные загружаются...</p>
     </div>
-    <button id="addQuestionBtn" class="btn-success" onclick="openCreateQuestionModal('/core/questions/')" style="display: none;">Добавить вопрос</button>
+    <button id="addQuestionBtn" class="btn-success" onclick="openCreateQuestionModal('/base/questions/')" style="display: none;">Добавить вопрос</button>
 
     <script>
         const API_BASE_URL = 'http://127.0.0.1:8000';
@@ -311,7 +335,6 @@
             });
 
             html += '</tr></thead><tbody>';
-            console.log(data)
 
             // Данные таблицы
             data.forEach(item => {
@@ -352,7 +375,6 @@
             });
 
             html += '</tr></thead><tbody>';
-            console.log(data)
 
             // Данные таблицы
             data.forEach(item => {
@@ -376,7 +398,7 @@
             const container = document.getElementById('questionsTable');
             const fields = ['id', 'lesson', 'content'];
             const tableHeaders = ['id', 'урок', 'вопрос'];
-            const endpoint = '/core/questions/'
+            const endpoint = '/base/questions/'
 
             if (!data || data.length === 0) {
                 container.innerHTML = '<p>Нет данных для отображения</p>';
@@ -395,7 +417,6 @@
             }
 
             html += '</tr></thead><tbody>';
-            console.log(data)
 
             // Данные таблицы
             data.forEach(item => {
@@ -434,7 +455,7 @@
             currentEndpoint = endpoint;
 
             // Загружаем список уроков
-            const lessons = await fetchData('/core/lessons/');
+            const lessons = await fetchData('/base/lessons/');
             if (!lessons) return;
 
             document.getElementById('modalTitle').textContent = 'Создание нового вопроса';
@@ -493,7 +514,7 @@
             // Загружаем данные вопроса и список уроков
             const [question, lessons] = await Promise.all([
                 fetchData(`${endpoint}${id}/`),
-                fetchData('/core/lessons/')
+                fetchData('/base/lessons/')
             ]);
             
             if (!question || !lessons) return;
@@ -606,12 +627,52 @@
         // Функция для загрузки всех данных
         async function loadAllData() {
             try {
-                const members = await fetchData('/core/members/');
+                const systemStats = await fetchData('/additional/system/stats/');
+                if (systemStats) {
+                    renderTable(
+                        systemStats,
+                        'systemStatsTable',
+                        ['modules', 'lessons', 'questions', 'members', 'updated_at'],
+                        ['модули', 'уроки', 'курсы', 'участники', 'время последнего обновления информации'],
+                    );
+                }
+
+                const mostPopularCourse = await fetchData('/additional/courses/most-popular/');
+                if (mostPopularCourse) {
+                    renderTable(
+                        mostPopularCourse,
+                        'mostPopularCourseTable',
+                        ['course', 'members_count'],
+                        ['курс', 'количество участников'],
+                    );
+                }
+
+                const courseWithReachestContent = await fetchData('/additional/courses/richest-content/');
+                if (courseWithReachestContent) {
+                    renderTable(
+                        courseWithReachestContent,
+                        'courseWithReachestContentTable',
+                        ['course', 'lessons_count'],
+                        ['курс', 'количество уроков'],
+                    );
+                }
+
+                const coursesWithoutModules = await fetchData('/additional/courses/without-modules/');
+                if (coursesWithoutModules) {
+                    renderTable(
+                        coursesWithoutModules,
+                        'coursesWithoutModulesTable',
+                        ['course'],
+                        ['курс'],
+                    );
+                }
+
+                const members = await fetchData('/base/members/');
                 if (members) {
                     renderMembersTable(members);
                 }
 
-                const coursesWithMembers = await fetchData('/core/courses/with-members-stats/');
+                const coursesWithMembers = await fetchData('/base/courses/with-members-stats/');
                 if (coursesWithMembers) {
                     renderTable(
                         coursesWithMembers,
@@ -621,7 +682,7 @@
                     );
                 }
 
-                const modulesWithLessons = await fetchData('/core/modules/lesson-counts/');
+                const modulesWithLessons = await fetchData('/base/modules/lesson-counts/');
                 if (modulesWithLessons) {
                     renderTable(
                         modulesWithLessons,
@@ -631,12 +692,12 @@
                     );
                 }
 
-                const lessons = await fetchData('/core/lessons/');
+                const lessons = await fetchData('/base/lessons/');
                 if (lessons) {
                     renderLessonsTable(lessons);
                 }
 
-                const questions = await fetchData('/core/questions/');
+                const questions = await fetchData('/base/questions/');
                 if (questions) {
                     renderQuestionsTable(questions);
                 }

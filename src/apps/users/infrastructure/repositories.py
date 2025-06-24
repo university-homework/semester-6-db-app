@@ -1,11 +1,10 @@
 from typing import Type
 
-from sqlmodel import select
-from sqlmodel.ext.asyncio.session import AsyncSession
-
 from apps.users.infrastructure.models import UserModel
 from infrastructure.db.config import engine
 from infrastructure.repositories import BaseRepository
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 class UserRepository(BaseRepository):

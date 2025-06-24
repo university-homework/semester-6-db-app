@@ -1,11 +1,10 @@
 from typing import Type
 
-from sqlmodel import select, func
-from sqlmodel.ext.asyncio.session import AsyncSession
-
 from apps.core.infrastructure import models
 from infrastructure.db.config import engine
 from infrastructure.repositories import BaseRepository
+from sqlmodel import func, select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 class MemberRepository(BaseRepository):
@@ -24,8 +23,8 @@ class CourseRepository(BaseRepository):
             select(
                 models.CourseModel.id,
                 models.CourseModel.name,
-                func.count(models.MemberModel.id).label("member_count"),
-                (func.count(models.MemberModel.id) / total_members * 100).label("percentage")
+                func.count(models.MemberModel.id).label('member_count'),
+                (func.count(models.MemberModel.id) / total_members * 100).label('percentage'),
             )
             .join(models.MemberModel, models.MemberModel.course_id == models.CourseModel.id)
             .group_by(models.CourseModel.id, models.CourseModel.name)
@@ -49,7 +48,7 @@ class ModuleRepository(BaseRepository):
                 models.ModuleModel.id,
                 models.ModuleModel.name,
                 func.count(models.LessonModel.id).label('lesson_count'),
-                func.rank().over(order_by=func.count(models.LessonModel.id).desc()).label('rank')
+                func.rank().over(order_by=func.count(models.LessonModel.id).desc()).label('rank'),
             )
             .join(models.LessonModel, models.LessonModel.module_id == models.ModuleModel.id)
             .group_by(models.ModuleModel.id, models.ModuleModel.name)

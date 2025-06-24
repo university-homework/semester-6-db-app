@@ -1,7 +1,6 @@
-from fastapi import APIRouter
-
 from apps.users.infrastructure.schemas import UserReadSchema
 from apps.users.services import UserService
+from fastapi import APIRouter
 
 router = APIRouter(prefix='/users', tags=['10.1'])
 

@@ -1,8 +1,8 @@
 import json
 import random
+from typing import Dict
 
 from faker import Faker
-from typing import Dict
 
 fake = Faker('ru_RU')
 
@@ -49,7 +49,7 @@ def generate_test_data() -> Dict:
     # 4. Модули (по 3-6 на курс)
     for course_idx in range(len(data['courses'])):
         for i in range(random.randint(3, 6)):
-            data['modules'].append({'course_id': course_idx + 1, 'name': f'Модуль {i+1}: {fake.bs()}'})
+            data['modules'].append({'course_id': course_idx + 1, 'name': f'Модуль {i + 1}: {fake.bs()}'})
 
     # 5. Уроки (по 4-8 на модуль)
     for module_idx in range(len(data['modules'])):
@@ -57,7 +57,7 @@ def generate_test_data() -> Dict:
             data['lessons'].append(
                 {
                     'module_id': module_idx + 1,
-                    'name': f'Урок {i+1}: {fake.sentence(nb_words=3)}',
+                    'name': f'Урок {i + 1}: {fake.sentence(nb_words=3)}',
                     'file_path': f'/lessons/{fake.uuid4()}.mp4',
                 }
             )
@@ -66,7 +66,7 @@ def generate_test_data() -> Dict:
     for lesson_idx in range(len(data['lessons'])):
         for i in range(random.randint(3, 5)):
             data['questions'].append(
-                {'lesson_id': lesson_idx + 1, 'content': f'Вопрос {i+1}: {fake.sentence(nb_words=8)}?'}
+                {'lesson_id': lesson_idx + 1, 'content': f'Вопрос {i + 1}: {fake.sentence(nb_words=8)}?'}
             )
 
     # 7. Варианты ответов (по 4 на вопрос, 1 правильный)
@@ -76,7 +76,7 @@ def generate_test_data() -> Dict:
             data['answer_options'].append(
                 {
                     'question_id': question_idx + 1,
-                    'content': f'Вариант {i+1}: {fake.sentence(nb_words=5)}',
+                    'content': f'Вариант {i + 1}: {fake.sentence(nb_words=5)}',
                     'is_right': i == correct_index,
                 }
             )

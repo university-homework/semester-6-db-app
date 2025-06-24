@@ -1,20 +1,18 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
-from infrastructure.db.models import BaseModel
-from infrastructure.db.utils.migrations import get_db_url
 from apps.core.infrastructure.models import (  # noqa
-    MemberModel,
-    CourseModel,
-    ModuleModel,
-    LessonModel,
-    QuestionModel,
     AnswerOptionModel,
+    CourseModel,
+    LessonModel,
+    MemberModel,
+    ModuleModel,
+    QuestionModel,
 )
 from apps.users.infrastructure.models import UserModel  # noqa
+from infrastructure.db.models import BaseModel
+from infrastructure.db.utils.migrations import get_db_url
+from sqlalchemy import engine_from_config, pool
 
 config = context.config
 config.set_main_option('sqlalchemy.url', get_db_url())

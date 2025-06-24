@@ -1,13 +1,12 @@
 import asyncio
 import json
 
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import text
-
-from infrastructure.db.config import engine
 from apps.core.infrastructure import models as core_models
 from apps.users.infrastructure import models as users_models
 from consts import FIXTURES_ROOT
+from infrastructure.db.config import engine
+from sqlmodel import text
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 async def load_from_json(filename: str):

@@ -1,5 +1,5 @@
-from infrastructure.db.models import BaseModel
 from apps.users.infrastructure.schemas import UserReadSchema
+from infrastructure.db.models import BaseModel
 
 
 class CourseForMemberResponseSchema(BaseModel):
