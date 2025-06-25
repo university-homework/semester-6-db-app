@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>index</title>
+    <title>Платформа онлайн обучения</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,6 +69,13 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-width: 250px;
         }
         .btn-success {
             background-color: #28a745;
@@ -146,15 +153,34 @@
         #mostPopularCourse {
             font-size: 20px;
         }
+        .course-stats {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .course-stats h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
     <h1>Платформа онлайн обучения</h1>
 
     <div class="actions">
+        <select id="courseSelect" onchange="loadCourseStats()">
+            <option value="">Выберите курс</option>
+            <!-- Опции будут заполнены динамически -->
+        </select>
         <button onclick="loadAllData()">Обновить данные</button>
         <button id="loginBtn" class="btn-login" onclick="toggleAuth()">Авторизоваться</button>
         <div id="authStatus" class="auth-status">Не авторизован</div>
+    </div>
+
+    <div id="selectedCourseStats" class="course-stats">
+        <h3>Статистика курса</h3>
+        <p>Выберите курс из списка, чтобы увидеть статистику</p>
     </div>
 
     <!-- Модальное окно для создания/редактирования -->
@@ -624,9 +650,74 @@
             }
         }
 
+        // Функция для загрузки списка курсов в выпадающий список
+        async function loadCourses() {
+            const courses = await fetchData('/additional/all_courses/');
+            if (!courses) return;
+            
+            const select = document.getElementById('courseSelect');
+            
+            // Очищаем все опции кроме первой
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            
+            // Добавляем курсы в выпадающий список
+            courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = `${course.name} (ID: ${course.id})`;
+                select.appendChild(option);
+            });
+        }
+
+        // Функция для загрузки статистики выбранного курса
+        async function loadCourseStats() {
+            const select = document.getElementById('courseSelect');
+            const courseId = select.value;
+            
+            if (!courseId) {
+                document.getElementById('selectedCourseStats').innerHTML = 
+                    '<h3>Статистика курса</h3><p>Выберите курс из списка, чтобы увидеть статистику</p>';
+                return;
+            }
+            
+            const stats = await fetchData(`/additional/courses/${courseId}/stats/`);
+            if (!stats) return;
+            
+            const container = document.getElementById('selectedCourseStats');
+            
+            // Формируем HTML для отображения статистики
+            let html = `
+                <h3>Статистика курса: ${stats.course_name}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Модули</th>
+                            <th>Уроки</th>
+                            <th>Участники</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${stats.module_count}</td>
+                            <td>${stats.lesson_count}</td>
+                            <td>${stats.member_count}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p><strong>ID курса:</strong> ${stats.course_id}</p>
+            `;
+            
+            container.innerHTML = html;
+        }
+
         // Функция для загрузки всех данных
         async function loadAllData() {
             try {
+                // Загружаем список курсов для выпадающего списка
+                await loadCourses();
+                
                 const systemStats = await fetchData('/additional/system/stats/');
                 if (systemStats) {
                     renderTable(

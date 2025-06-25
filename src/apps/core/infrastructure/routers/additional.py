@@ -2,12 +2,51 @@ from datetime import datetime
 
 import pytz
 from apps.core.infrastructure import models
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from infrastructure.db.config import get_db
 from sqlmodel import exists, func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 router = APIRouter(prefix='/additional')
+
+
+@router.get("/all_courses/")
+async def get_courses(db: AsyncSession = Depends(get_db)):
+    courses = (await db.exec(select(models.CourseModel))).all()
+    return courses
+
+
+@router.get("/courses/{course_id}/stats")
+async def get_course_stats(course_id, db: AsyncSession = Depends(get_db)):
+    # Проверяем существование курса
+    course_id = int(course_id)
+    course = await db.get(models.CourseModel, course_id)
+
+    # Получаем количество модулей
+    module_count = (await db.exec(
+        select(func.count()).where(models.ModuleModel.course_id == course_id)
+    )).one()
+
+    # Получаем количество уроков (через модули)
+    lesson_count = (await db.exec(
+        select(func.count())
+        .select_from(models.LessonModel)
+        .join(models.ModuleModel)
+        .where(models.ModuleModel.course_id == course_id)
+    )).one()
+
+    # Получаем количество участников
+    member_count = (await db.exec(
+        select(func.count()).where(models.MemberModel.course_id == course_id)
+    )).one()
+
+    return {
+        "course_id": course_id,
+        "course_name": course.name,
+        "module_count": module_count,
+        "lesson_count": lesson_count,
+        "member_count": member_count
+    }
 
 
 @router.get('/system/stats')
